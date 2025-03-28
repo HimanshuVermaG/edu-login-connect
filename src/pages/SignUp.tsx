@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { ArrowRight } from "lucide-react";
 import AuthLayout from '@/components/layouts/AuthLayout';
@@ -8,10 +8,16 @@ import AuthCard from '@/components/auth/AuthCard';
 import UserTypeSelector, { UserType } from '@/components/auth/UserTypeSelector';
 import StudentForm, { StudentFormData } from '@/components/auth/StudentForm';
 import TeacherForm, { TeacherFormData } from '@/components/auth/TeacherForm';
+import { studentApi, teacherApi } from '@/services/api';
+import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const SignUp = () => {
   const [userType, setUserType] = useState<UserType>('student');
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   
   // Student form state
   const [studentForm, setStudentForm] = useState<StudentFormData>({
@@ -49,61 +55,116 @@ const SignUp = () => {
     });
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    if (userType === 'student') {
-      // Basic student form validation
-      if (Object.values(studentForm).some(val => !val.trim())) {
+    try {
+      if (userType === 'student') {
+        // Basic student form validation
+        if (Object.values(studentForm).some(val => !val.trim())) {
+          toast({
+            title: "Error",
+            description: "Please fill in all fields",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        
+        if (studentForm.password !== studentForm.confirmPassword) {
+          toast({
+            title: "Error",
+            description: "Passwords do not match",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        
+        // Map form data to API requirements
+        const studentData = {
+          name: studentForm.name,
+          fatherName: studentForm.fatherName,
+          schoolName: studentForm.school,
+          mobile: studentForm.mobileNumber,
+          standard: parseInt(studentForm.class.replace('Class ', '')),
+          sirNumber: studentForm.srNumber,
+          password: studentForm.password
+        };
+        
+        // Create student in database
+        const response = await studentApi.createStudent(studentData);
+        
         toast({
-          title: "Error",
-          description: "Please fill in all fields",
-          variant: "destructive",
+          title: "Registration Successful",
+          description: `Student account created for ${studentForm.name}`,
         });
-        return;
-      }
-      
-      if (studentForm.password !== studentForm.confirmPassword) {
+        
+        // Login the newly created student
+        login({
+          id: response.student._id,
+          name: response.student.name,
+          userType: 'student'
+        });
+        
+        navigate('/dashboard');
+      } else {
+        // Basic teacher form validation
+        if (Object.values(teacherForm).some(val => !val.trim())) {
+          toast({
+            title: "Error",
+            description: "Please fill in all fields",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        
+        if (teacherForm.password !== teacherForm.confirmPassword) {
+          toast({
+            title: "Error",
+            description: "Passwords do not match",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        
+        // Map form data to API requirements
+        const teacherData = {
+          name: teacherForm.name,
+          ehrmsCode: teacherForm.ehrmsCode,
+          schoolName: teacherForm.school,
+          mobile: teacherForm.mobileNumber,
+          password: teacherForm.password
+        };
+        
+        // Create teacher in database
+        const response = await teacherApi.createTeacher(teacherData);
+        
         toast({
-          title: "Error",
-          description: "Passwords do not match",
-          variant: "destructive",
+          title: "Registration Successful",
+          description: `Teacher account created for ${teacherForm.name}`,
         });
-        return;
+        
+        // Login the newly created teacher
+        login({
+          id: response.teacher._id,
+          name: response.teacher.name,
+          userType: 'teacher'
+        });
+        
+        navigate('/dashboard');
       }
-      
-      // In a real app, you would handle student registration here
-      console.log('Student registration', studentForm);
+    } catch (error: any) {
       toast({
-        title: "Sign Up Successful",
-        description: `Student account created for ${studentForm.name}`,
+        title: "Registration Failed",
+        description: error.response?.data?.message || "Something went wrong",
+        variant: "destructive",
       });
-    } else {
-      // Basic teacher form validation
-      if (Object.values(teacherForm).some(val => !val.trim())) {
-        toast({
-          title: "Error",
-          description: "Please fill in all fields",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (teacherForm.password !== teacherForm.confirmPassword) {
-        toast({
-          title: "Error",
-          description: "Passwords do not match",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // In a real app, you would handle teacher registration here
-      console.log('Teacher registration', teacherForm);
-      toast({
-        title: "Sign Up Successful",
-        description: `Teacher account created for ${teacherForm.name}`,
-      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -123,9 +184,13 @@ const SignUp = () => {
           )}
           
           <div className="mt-6">
-            <button type="submit" className="auth-btn-primary flex items-center justify-center gap-2">
-              Sign Up <ArrowRight size={16} />
-            </button>
+            <Button 
+              type="submit" 
+              className="w-full bg-edu-primary hover:bg-edu-primary-dark flex items-center justify-center gap-2"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating Account..." : "Sign Up"} {!isLoading && <ArrowRight size={16} />}
+            </Button>
           </div>
         </form>
         
