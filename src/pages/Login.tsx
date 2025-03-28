@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, KeyRound } from "lucide-react";
 import AuthLayout from '@/components/layouts/AuthLayout';
 import AuthCard from '@/components/auth/AuthCard';
 import UserTypeSelector, { UserType } from '@/components/auth/UserTypeSelector';
 import FormInput from '@/components/auth/FormInput';
 import PasswordInput from '@/components/auth/PasswordInput';
+import { Button } from '@/components/ui/button';
 
 const Login = () => {
   const [userType, setUserType] = useState<UserType>('student');
@@ -30,8 +31,8 @@ const Login = () => {
 
     // Perform login logic here
     toast({
-      title: "Login Attempted",
-      description: `${userType} login with mobile: ${mobileNumber}`,
+      title: "Login Successful",
+      description: `Welcome back, ${userType}!`,
     });
     
     // In a real app, you would handle authentication here
@@ -41,44 +42,48 @@ const Login = () => {
   return (
     <AuthLayout>
       <AuthCard title="Login to Your Account">
+        <div className="flex justify-center mb-6">
+          <div className="w-16 h-16 bg-edu-light rounded-full flex items-center justify-center">
+            <KeyRound className="text-edu-primary w-8 h-8" />
+          </div>
+        </div>
+        
         <UserTypeSelector 
           userType={userType} 
           onUserTypeChange={setUserType} 
         />
         
-        <form onSubmit={handleLogin}>
-          <div className="space-y-4">
-            <FormInput
-              id="mobileNumber"
-              name="mobileNumber"
-              type="tel"
-              value={mobileNumber}
-              onChange={(e) => setMobileNumber(e.target.value)}
-              placeholder="Enter your mobile number"
-              label="Mobile Number"
-              pattern="[0-9]*"
-              inputMode="numeric"
-            />
-            
-            <PasswordInput
-              id="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              label="Password"
-            />
-            
-            <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-sm text-edu-primary hover:underline">
-                Forgot Password?
-              </Link>
-            </div>
-            
-            <button type="submit" className="auth-btn-primary flex items-center justify-center gap-2">
-              Login <ArrowRight size={16} />
-            </button>
+        <form onSubmit={handleLogin} className="space-y-5">
+          <FormInput
+            id="mobileNumber"
+            name="mobileNumber"
+            type="tel"
+            value={mobileNumber}
+            onChange={(e) => setMobileNumber(e.target.value)}
+            placeholder="Enter your mobile number"
+            label="Mobile Number"
+            pattern="[0-9]*"
+            inputMode="numeric"
+          />
+          
+          <PasswordInput
+            id="password"
+            name="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            label="Password"
+          />
+          
+          <div className="flex justify-end">
+            <Link to="/forgot-password" className="text-sm text-edu-primary hover:underline">
+              Forgot Password?
+            </Link>
           </div>
+          
+          <Button type="submit" className="w-full bg-edu-primary hover:bg-edu-primary-dark flex items-center justify-center gap-2">
+            Login <ArrowRight size={16} />
+          </Button>
         </form>
         
         <div className="mt-6 text-center">
