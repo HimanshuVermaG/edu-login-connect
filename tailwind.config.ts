@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Add edu-specific colors
+				edu: {
+					'primary': '#4f46e5',
+					'primary-dark': '#4338ca',
+					'secondary': '#6366f1',
+					'accent': '#818cf8',
+					'light': '#e0e7ff'
 				}
 			},
 			borderRadius: {
@@ -89,6 +98,9 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			backgroundImage: {
+				'gradient-edu': 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
 			}
 		}
 	},
